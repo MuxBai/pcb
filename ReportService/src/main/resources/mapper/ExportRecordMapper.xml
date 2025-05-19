@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.reportservice.mapper.ExportRecordMapper">
+    <resultMap id="ExportRecordMapper" type="com.work.reportservice.entity.ExportRecords">
+        <id property="exportId" column="export_id"/>
+        <result property="reportId" column="report_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="exportedAt" column="exported_at"/>
+    </resultMap>
+
+    <insert id="insertExportRecord" parameterType="com.work.reportservice.entity.ExportRecords">
+        INSERT INTO export_records (report_id, user_id, exported_at)
+        VALUES (#{reportId}, #{userId}, #{exportedAt})
+    </insert>
+
+    <select id="getExportRecordsByUserId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records WHERE user_id = #{userId}
+    </select>
+
+    <select id="getExportRecordsByReportId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records WHERE report_id = #{reportId}
+    </select>
+
+    <select id="getExportRecordByExportId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records WHERE export_id = #{exportId}
+    </select>
+</mapper>
