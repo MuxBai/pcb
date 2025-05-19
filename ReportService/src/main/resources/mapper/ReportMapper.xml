@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.work.reportservice.mapper.ReportMapper">
-    <resultMap id="ReportMap" type="com.work.reportservice.entity.Report">
+    <resultMap id="ReportMap" type="com.work.reportservice.entity.Reports">
         <id property="reportId" column="report_id"/>
         <result property="content" column="content"/>
         <result property="createdAt" column="created_at"/>
@@ -12,19 +12,19 @@
     </resultMap>
 
     <select id="findByReportId" resultMap="ReportMap">
-        SELECT * FROM report WHERE report_id = #{reportId}
+        SELECT * FROM reports WHERE report_id = #{reportId}
     </select>
 
     <select id="findReportIdBySerialNumber" resultType="String">
-        SELECT report_id FROM report WHERE serial_number = #{serialNumber}
+        SELECT report_id FROM reports WHERE serial_number = #{serialNumber}
     </select>
 
     <update id="changeReport" parameterType="com.work.reportservice.dto.ChangeReport">
-        UPDATE report SET content = #{content} WHERE report_id = #{reportId}
+        UPDATE reports SET content = #{content} WHERE report_id = #{reportId}
     </update>
 
-    <insert id="insertReport" parameterType="com.work.reportservice.entity.Report">
-        INSERT INTO report (content, created_at, front_defect_img, back_defect_img, serial_number)
+    <insert id="insertReport" parameterType="com.work.reportservice.entity.Reports">
+        INSERT INTO reports (content, created_at, front_defect_img, back_defect_img, serial_number)
         VALUES (#{content}, #{createdAt}, #{frontDefectImg}, #{backDefectImg}, #{serialNumber})
     </insert>
 </mapper>

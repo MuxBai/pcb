@@ -2,7 +2,7 @@ package com.work.reportservice.dao.impl;
 
 import com.work.reportservice.dao.ReportDao;
 import com.work.reportservice.dto.ChangeReport;
-import com.work.reportservice.entity.Report;
+import com.work.reportservice.entity.Reports;
 import com.work.reportservice.mapper.ReportMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -15,7 +15,7 @@ public class ReportDaoImpl implements ReportDao {
     private ReportMapper reportMapper;
 
     @Override
-    public Report findByReportId(Integer reportId) {
+    public Reports findByReportId(Integer reportId) {
         return reportMapper.findByReportId(reportId);
     }
 
@@ -30,7 +30,7 @@ public class ReportDaoImpl implements ReportDao {
     }
 
     @Override
-    public Boolean insertReport(Report report) {
-        return reportMapper.insertReport(report);
+    public Boolean insertReport(Reports reports) {
+        return reportMapper.insertReport(reports);
     }
 }

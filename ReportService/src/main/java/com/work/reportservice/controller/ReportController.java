@@ -1,7 +1,7 @@
 package com.work.reportservice.controller;
 
 import com.work.reportservice.dto.ChangeReport;
-import com.work.reportservice.entity.Report;
+import com.work.reportservice.entity.Reports;
 import com.work.reportservice.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ public class ReportController {
     private ReportService reportService;
 
     @GetMapping("/findByReportId/{reportId}")
-    public Report findByReportId(@PathVariable Integer reportId){
+    public Reports findByReportId(@PathVariable Integer reportId){
         return reportService.findByReportId(reportId);
     }
 
@@ -30,7 +30,7 @@ public class ReportController {
     }
 
     @PostMapping("/insertReport")
-    public Boolean insertReport(@RequestBody Report report){
-        return reportService.insertReport(report);
+    public Boolean insertReport(@RequestBody Reports reports){
+        return reportService.insertReport(reports);
     }
 }

@@ -2,7 +2,7 @@ package com.work.reportservice.service.impl;
 
 import com.work.reportservice.dao.ReportDao;
 import com.work.reportservice.dto.ChangeReport;
-import com.work.reportservice.entity.Report;
+import com.work.reportservice.entity.Reports;
 import com.work.reportservice.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class ReportServiceImpl implements ReportService {
     private ReportDao reportDao;
 
     @Override
-    public Report findByReportId(Integer reportId) {
+    public Reports findByReportId(Integer reportId) {
         return reportDao.findByReportId(reportId);
     }
 
@@ -30,7 +30,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Boolean insertReport(Report report) {
-        return reportDao.insertReport(report);
+    public Boolean insertReport(Reports reports) {
+        return reportDao.insertReport(reports);
     }
 }
