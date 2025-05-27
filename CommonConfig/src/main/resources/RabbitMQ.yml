@@ -1,0 +1,7 @@
+requestQueue: RequestQueue
+requestExchange: RequestExchange
+requestRoutingKey: Request
+
+resultQueue: ResultQueue
+resultExchange: ResultExchange
+resultRoutingKey: Result
