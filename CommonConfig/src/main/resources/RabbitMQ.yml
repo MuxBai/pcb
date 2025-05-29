@@ -5,3 +5,9 @@ requestRoutingKey: Request
 resultQueue: ResultQueue
 resultExchange: ResultExchange
 resultRoutingKey: Result
+
+virtualHost: gundam
+rmqHost: localhost
+rmqPort: 5672
+rmqUser: ark
+rmqPassword: alice

@@ -4,8 +4,16 @@ server:
 spring:
   application:
     name: gateway-service
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   cloud:
     gateway:
+      httpclient:
+        pool:
+          max-connections: 500      # 连接池大小
+          acquire-timeout: 20000    # 连接获取超时（毫秒）
       discovery:
         locator:
           enabled: true

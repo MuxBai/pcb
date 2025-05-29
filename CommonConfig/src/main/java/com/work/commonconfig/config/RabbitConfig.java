@@ -6,6 +6,8 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +35,33 @@ public class RabbitConfig {
 
     @Value("${resultRoutingKey}")
     private String resultRoutingKey;
+
+    @Value("${virtualHost}")
+    private String virtualHost;
+
+    @Value("${rmqHost}")
+    private String rmqHost;
+
+    @Value("${rmqPort}")
+    private int rmqPort;
+
+    @Value("${rmqUser}")
+    private String rmqUser;
+
+    @Value("${rmqPassword}")
+    private String rmqPassword;
+
+
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        CachingConnectionFactory factory = new CachingConnectionFactory();
+        factory.setHost(rmqHost);          // 建议也通过 @Value 注入
+        factory.setPort(rmqPort);
+        factory.setUsername(rmqUser);
+        factory.setPassword(rmqPassword);
+        factory.setVirtualHost(virtualHost);   // 关键！设置虚拟主机
+        return factory;
+    }
 
     @Bean
     public Queue requestQueue() {

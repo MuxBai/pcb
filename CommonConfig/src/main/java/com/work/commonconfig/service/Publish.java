@@ -37,5 +37,6 @@ public class Publish {
                 rabbitConfig.getRequestRoutingKey(),
                 amqpMessage
         );
+        System.out.println("发送消息：" + message);
     }
 }

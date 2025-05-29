@@ -24,12 +24,13 @@ public class Consumer {
     @Autowired
     private ProductService productService;
 
-    @RabbitListener(queues = "${requestQueue}")
+    @RabbitListener(queues = "${resultQueue}")
     public void receive(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag){
         try{
             ReportMessage reportMessage = objectMapper.readValue(message, ReportMessage.class);
             //对拿到的数据反序列化后取出PCB板的ID和缺陷等级并更新
-            productService.updateDefectLevel(reportMessage.getSerialNumber(), reportMessage.getDefectLevel());
+            if(reportMessage.getDefectLevel() != null)
+                productService.updateDefectLevel(reportMessage.getSerialNumber(), reportMessage.getDefectLevel());
             channel.basicAck(deliveryTag, false);
         }catch (Exception e){
             logger.error("接收队列数据错误: {}", e.getMessage());

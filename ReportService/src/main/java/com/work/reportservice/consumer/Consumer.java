@@ -25,11 +25,12 @@ public class Consumer {
     @Autowired
     private ReportService reportService;
 
-    @RabbitListener(queues = "${requestQueue}")
+    @RabbitListener(queues = "${resultQueue}")
     public void receive(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag){
-
+        System.out.println("拿到数据");
         try{
             ReportMessage reportMessage = objectMapper.readValue(message, ReportMessage.class);
+            System.out.println(reportMessage);
             Reports reports = new Reports();
 
             //将reports需要的参数由reportMessage传入
@@ -38,9 +39,10 @@ public class Consumer {
             reports.setFrontDefectImg(reportMessage.getFrontDefectImg());
             reports.setBackDefectImg(reportMessage.getBackDefectImg());
             reports.setSerialNumber(reportMessage.getSerialNumber());
-
+            System.out.println(reports);
             //调用service层方法
-            reportService.insertReport(reports);
+            if(reportService.insertReport(reports))
+                System.out.println("插入成功");
 
             channel.basicAck(deliveryTag, false);
         }catch (Exception e){

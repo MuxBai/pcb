@@ -66,6 +66,11 @@
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>3.0.3</version> <!-- 根据你项目实际选择 -->
         </dependency>
+        <!-- Maven -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <!-- UserService/pom.xml中缺少 -->
         <dependency>

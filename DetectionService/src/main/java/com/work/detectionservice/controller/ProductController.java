@@ -1,5 +1,6 @@
 package com.work.detectionservice.controller;
 
+import com.work.detectionservice.dto.UploadProduct;
 import com.work.detectionservice.entity.Products;
 import com.work.detectionservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping("/insert")
-    public Boolean insertProductData(@RequestBody  Products products) {
+    public Boolean insertProductData(@ModelAttribute UploadProduct products) {
         return productService.insertProductData(products);
     }
 
