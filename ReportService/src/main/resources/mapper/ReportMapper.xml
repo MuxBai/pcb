@@ -15,8 +15,23 @@
         SELECT * FROM reports WHERE report_id = #{reportId}
     </select>
 
-    <select id="findReportIdBySerialNumber" resultType="String">
-        SELECT report_id FROM reports WHERE serial_number = #{serialNumber}
+    <select id="findAllReport" resultMap="ReportMap">
+        SELECT * FROM reports
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReports" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM reports
+    </select>
+
+    <select id="findReportBySerialNumber" resultMap="ReportMap">
+        SELECT * FROM reports
+        WHERE serial_number = #{serialNumber}
+        ORDER BY report_id
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    <select id="countReportsBySerialNumber" resultType="int">
+        SELECT COUNT(*) FROM reports WHERE serial_number = #{serialNumber}
     </select>
 
     <update id="changeReport" parameterType="com.work.reportservice.dto.ChangeReport">
@@ -27,4 +42,34 @@
         INSERT INTO reports (content, created_at, front_defect_img, back_defect_img, serial_number)
         VALUES (#{content}, #{createdAt}, #{frontDefectImg}, #{backDefectImg}, #{serialNumber})
     </insert>
+
+    <select id="findExportReportsByIds" resultType="com.work.reportservice.dto.OutReport">
+        SELECT content, created_at, front_defect_img, back_defect_img, serial_number
+        FROM reports
+        WHERE report_id IN
+        <foreach collection="reportIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="findExportReportById" resultType="com.work.reportservice.dto.OutReport">
+        SELECT content, created_at, front_defect_img, back_defect_img, serial_number
+        FROM reports
+        WHERE report_id = #{id}
+    </select>
+
+    <delete id="deleteByReportId">
+        DELETE FROM reports
+        WHERE report_id IN
+        <foreach collection="reportIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBySerialNumber">
+        DELETE FROM reports
+        WHERE serial_number IN
+        <foreach collection="serialNumbers" item="sn" open="(" separator="," close=")">
+            #{sn}
+        </foreach>
+    </delete>
 </mapper>

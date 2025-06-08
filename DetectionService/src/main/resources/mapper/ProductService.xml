@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.detectionservice.mapper.ProductMapper">
+    <resultMap id="ProductsMap" type="com.work.detectionservice.entity.Products">
+        <id property="serialNumber" column="serial_number"/>
+        <result property="frontImage" column="front_image"/>
+        <result property="backImage" column="back_image"/>
+        <result property="userId" column="user_id"/>
+        <result property="defectLevel" column="defect_level"/>
+    </resultMap>
+
+    <insert id="insertProductData" parameterType="com.work.detectionservice.entity.Products">
+        INSERT INTO products (serial_number, front_image, back_image, user_id, defect_level)
+        VALUES (#{serialNumber}, #{frontImage}, #{backImage}, #{userId}, #{defectLevel})
+    </insert>
+
+    <update id="updateDefectLevel" parameterType="com.work.detectionservice.entity.Products">
+        UPDATE products SET defect_level = #{defectLevel} WHERE serial_number = #{serialNumber}
+    </update>
+
+    <select id="findProductByUserId" resultType="com.work.detectionservice.entity.Products">
+        SELECT * FROM products
+        WHERE user_id = #{userId}
+        ORDER BY serial_number
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    <select id="countProductByUserId" resultType="int">
+        SELECT COUNT(*) FROM products
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="countProduct" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM products
+    </select>
+
+    <update id="updateProductImages" parameterType="com.work.detectionservice.entity.Products">
+        UPDATE products
+        <set>
+            <if test="frontImage != null and frontImage != ''">
+                front_image = #{frontImage},
+            </if>
+            <if test="backImage != null and backImage != ''">
+                back_image = #{backImage},
+            </if>
+        </set>
+        WHERE serial_number = #{serialNumber}
+    </update>
+
+    <select id="findProductsByDefectLevel" resultType="com.work.detectionservice.entity.Products">
+        SELECT * FROM products
+        WHERE defect_level = #{defectLevel}
+        ORDER BY serial_number
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    <select id="countProductsByDefectLevel" resultType="int">
+        SELECT COUNT(*) FROM products
+        WHERE defect_level = #{defectLevel}
+    </select>
+
+    <select id="findAllProducts" resultType="com.work.detectionservice.entity.Products">
+        SELECT * FROM products
+        ORDER BY serial_number
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countAllProducts" resultType="int">
+        SELECT COUNT(*) FROM products
+    </select>
+
+    <delete id="deleteBySerialNumber">
+        DELETE FROM products
+        WHERE serial_number IN
+        <foreach collection="serialNumbers" item="sn" open="(" separator="," close=")">
+            #{sn}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByUserId">
+        DELETE FROM products
+        WHERE user_id IN
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

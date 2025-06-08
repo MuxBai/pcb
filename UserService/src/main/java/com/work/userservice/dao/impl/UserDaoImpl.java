@@ -1,8 +1,6 @@
 package com.work.userservice.dao.impl;
 
 import com.work.userservice.dao.UserDao;
-import com.work.userservice.dto.UserGetDTO;
-import com.work.userservice.dto.UserLoginDTO;
 import com.work.userservice.entity.Users;
 import com.work.userservice.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +24,11 @@ public class UserDaoImpl implements UserDao {
         return userMapper.login(id, password);
     }
 
-    //用户注册
+   /* //用户注册
     @Override
-    public Boolean register(Users users){
+    public Integer register(Users users){
         return userMapper.register(users);
-    }
+    }*/
 
     @Override
     public String getUserPassword(String id){

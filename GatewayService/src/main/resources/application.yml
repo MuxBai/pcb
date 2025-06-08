@@ -53,6 +53,13 @@ spring:
           filters:
             - StripPrefix=0
 
+        - id: report-service-export
+          uri: lb://report-service
+          predicates:
+            - Path=/exportReport/**
+          filters:
+            - StripPrefix=0
+
 eureka:
   client:
     service-url:

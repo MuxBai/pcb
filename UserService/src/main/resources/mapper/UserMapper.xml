@@ -21,12 +21,16 @@
     <insert id="register" parameterType="com.work.userservice.entity.Users">
         insert into users (user_id, name, gender, role, password) values (#{id}, #{name}, #{gender}, #{role}, #{password})
     </insert>
-    
-    <select id="getUserPassword" resultType="String">
+
+    <select id="getUserPassword" resultType="java.lang.String">
         select password from users where user_id = #{id}
     </select>
 
-    <select id="countPerson" resultType="Integer">
+    <select id="countPerson" resultType="java.lang.Integer">
         select count(*) from users where role = #{role}
     </select>
+
+    <update id="updatePassword">
+        update users set password = #{newPassword} WHERE user_id = #{id}
+    </update>
 </mapper>

@@ -7,8 +7,14 @@ import java.util.List;
 
 @Mapper
 public interface ExportRecordMapper {
-    public Boolean insertExportRecord(ExportRecords exportRecords);
-    public List<ExportRecords> getExportRecordsByUserId(String userId);
-    public List<ExportRecords> getExportRecordsByReportId(Integer reportId);
-    public ExportRecords getExportRecordByExportId(Integer exportId);
+    Boolean insertExportRecord(ExportRecords exportRecords);
+    List<ExportRecords> getExportRecordsByUserId(String userId, int pageSize, int offset);
+    int countExportRecordsByUserId(String userId);
+    List<ExportRecords> getExportRecordsByReportId(Integer reportId, int pageSize, int offset);
+    int countExportRecordsByReportId(Integer reportId);
+    ExportRecords getExportRecordByExportId(Integer exportId);
+    List<ExportRecords> findAllExportReport(int limit, int offset);
+    Integer countExportReport();
+    int deleteByExportId(List<Integer> exportIds);
+    int deleteByReportId(List<Integer> reportIds);
 }

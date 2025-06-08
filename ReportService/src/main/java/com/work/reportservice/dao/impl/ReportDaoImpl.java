@@ -14,15 +14,15 @@ public class ReportDaoImpl implements ReportDao {
     @Autowired
     private ReportMapper reportMapper;
 
-    @Override
-    public Reports findByReportId(Integer reportId) {
-        return reportMapper.findByReportId(reportId);
-    }
+//    @Override
+//    public Reports findByReportId(Integer reportId) {
+//        return reportMapper.findByReportId(reportId);
+//    }
 
-    @Override
+   /* @Override
     public List<String> findReportIdBySerialNumber(String serialNumber) {
         return reportMapper.findReportIdBySerialNumber(serialNumber);
-    }
+    }*/
 
     @Override
     public Boolean changeReport(ChangeReport changeReport) {

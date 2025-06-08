@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.userservice.mapper.AdminMapper">
+    <resultMap id = "AdminMap" type="com.work.userservice.entity.Admin">
+        <id column="admin_id" property="id"/>
+        <result column="admin_name" property="name"/>
+        <result column="password" property="password"/>
+    </resultMap>
+
+    <select id="login" resultMap="AdminMap">
+        select * from users where admin_id = #{id} and password = #{password}
+    </select>
+
+    <select id="getAdminPassword" resultType="java.lang.String">
+        select password from admin where admin_id = #{id}
+    </select>
+
+    <select id = "getAdminById" resultMap="AdminMap">
+        select * from admin where user_id = #{id}
+    </select>
+</mapper>

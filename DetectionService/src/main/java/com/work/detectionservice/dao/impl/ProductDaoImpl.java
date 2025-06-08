@@ -18,7 +18,7 @@ public class ProductDaoImpl implements ProductDao {
         return productMapper.insertProductData(products);
     }
 
-    @Override
+    /*@Override
     public Boolean updateDefectLevel(String serialNumber,Integer defectLevel){
         return productMapper.updateDefectLevel(serialNumber,defectLevel);
     }
@@ -31,7 +31,7 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public Products findProductBySerialNumber(String serialNumber){
         return productMapper.findProductBySerialNumber(serialNumber);
-    }
+    }*/
 
     @Override
     public Integer countProduct(){

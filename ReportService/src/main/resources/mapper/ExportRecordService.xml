@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.reportservice.mapper.ExportRecordMapper">
+    <resultMap id="ExportRecordMapper" type="com.work.reportservice.entity.ExportRecords">
+        <id property="exportId" column="export_id"/>
+        <result property="reportId" column="report_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="exportedAt" column="exported_at"/>
+    </resultMap>
+
+    <insert id="insertExportRecord" parameterType="com.work.reportservice.entity.ExportRecords">
+        INSERT INTO export_records (report_id, user_id, exported_at)
+        VALUES (#{reportId}, #{userId}, #{exportedAt})
+    </insert>
+
+    <!-- 分页查询：按 userId -->
+    <select id="getExportRecordsByUserId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records
+        WHERE user_id = #{userId}
+        ORDER BY export_id
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    <select id="countExportRecordsByUserId" resultType="int">
+        SELECT COUNT(*) FROM export_records WHERE user_id = #{userId}
+    </select>
+
+    <!-- 分页查询：按 reportId -->
+    <select id="getExportRecordsByReportId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records
+        WHERE report_id = #{reportId}
+        ORDER BY export_id
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    <select id="countExportRecordsByReportId" resultType="int">
+        SELECT COUNT(*) FROM export_records WHERE report_id = #{reportId}
+    </select>
+
+    <select id="getExportRecordByExportId" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records WHERE export_id = #{exportId}
+    </select>
+
+    <select id="findAllExportReport" resultMap="ExportRecordMapper">
+        SELECT * FROM export_records
+                          LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countExportReport" resultType="java.lang.Integer">
+        select count(*) from export_records
+    </select>
+
+    <delete id="deleteByExportId">
+        DELETE FROM export_records
+        WHERE export_id IN
+        <foreach collection="exportIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByReportId">
+        DELETE FROM export_records
+        WHERE report_id IN
+        <foreach collection="reportIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -64,6 +64,11 @@ public class DatabaseConfig {
                         .getResources("classpath:mapper/*.xml")
         );
 
+        // 开启驼峰命名自动映射
+        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        factoryBean.setConfiguration(configuration);
+
         return factoryBean.getObject();
     }
 

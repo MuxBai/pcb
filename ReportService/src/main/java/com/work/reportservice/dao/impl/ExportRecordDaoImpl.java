@@ -18,7 +18,7 @@ public class ExportRecordDaoImpl implements ExportRecordDao {
         return exportRecordMapper.insertExportRecord(exportRecords);
     }
 
-    @Override
+    /*@Override
     public List<ExportRecords> getExportRecordsByUserId(String userId) {
         return exportRecordMapper.getExportRecordsByUserId(userId);
     }
@@ -26,7 +26,7 @@ public class ExportRecordDaoImpl implements ExportRecordDao {
     @Override
     public List<ExportRecords> getExportRecordsByReportId(Integer reportId) {
         return exportRecordMapper.getExportRecordsByReportId(reportId);
-    }
+    }*/
 
     @Override
     public ExportRecords getExportRecordByExportId(Integer exportId) {
