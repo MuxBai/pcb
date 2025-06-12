@@ -99,6 +99,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>3.27.1</version>
+        </dependency>
+
         <!-- 使用新版本Jedis代替Lettuce（可选） -->
         <dependency>
             <groupId>redis.clients</groupId>

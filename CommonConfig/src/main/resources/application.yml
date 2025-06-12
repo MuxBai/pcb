@@ -6,12 +6,11 @@ spring:
     password: alice
     virtual-host: gundam
     connection-timeout: 60000
-
   data:
     redis:
       host: localhost  # 新配置路径
       port: 6379
-      username: default # Redis 6+需要
+#      password: "root"
       database: 0
       client-type: jedis # 可选：强制使用Jedis
       jedis:

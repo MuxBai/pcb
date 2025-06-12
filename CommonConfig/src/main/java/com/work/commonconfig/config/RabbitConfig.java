@@ -60,6 +60,10 @@ public class RabbitConfig {
         factory.setUsername(rmqUser);
         factory.setPassword(rmqPassword);
         factory.setVirtualHost(virtualHost);   // 关键！设置虚拟主机
+        // 关键配置：心跳检测（单位：秒）
+        factory.setRequestedHeartBeat(30); // 每 30 秒发送一次心跳
+        // 连接超时（单位：毫秒）
+        factory.setConnectionTimeout(3000); // 30 秒超时
         return factory;
     }
 

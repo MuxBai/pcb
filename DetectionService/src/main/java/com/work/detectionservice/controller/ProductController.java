@@ -140,7 +140,7 @@ public class ProductController {
     @PostMapping("/insert-image")
     public ResponseEntity<?> insertProductData(
             @RequestPart("userId") String userId,
-            @RequestPart(" ") MultipartFile frontImage,
+            @RequestPart("frontImage") MultipartFile frontImage,
             @RequestPart("backImage") MultipartFile backImage,
             @RequestHeader("Authorization") String token) {
 
