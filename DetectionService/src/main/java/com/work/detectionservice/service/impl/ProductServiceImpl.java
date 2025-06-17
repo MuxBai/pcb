@@ -94,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
             products.setBackImage(backImagePath);
             products.setUserId(uploadProduct.getUserId());
             products.setDefectLevel(0);
+            System.out.println("默认缺陷等级为0");
             return productDao.insertProductData(products);
         }catch (Exception e){
             logger.error("向队列消息发送失败: {}", e.getMessage());

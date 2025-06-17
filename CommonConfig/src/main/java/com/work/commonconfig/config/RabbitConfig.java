@@ -2,10 +2,7 @@ package com.work.commonconfig.config;
 
 import com.work.commonconfig.factory.YamlPropertySourceFactory;
 import lombok.Getter;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +24,11 @@ public class RabbitConfig {
     @Value("${requestRoutingKey}")
     private String requestRoutingKey;
 
-    @Value("${resultQueue}")
-    private String resultQueue;
+    @Value("${resultQueueOne}")
+    private String resultQueueOne;
+
+    @Value("${resultQueueTwo}")
+    private String resultQueueTwo;
 
     @Value("${resultExchange}")
     private String resultExchange;
@@ -74,33 +74,43 @@ public class RabbitConfig {
 
 
     @Bean
-    public DirectExchange  requestExchange() {
-        return new DirectExchange(requestExchange, true,  false);
+    public FanoutExchange  requestExchange() {
+        return new FanoutExchange(requestExchange, true,  false);
     }
 
     @Bean
     public Binding  requestBinding() {
         return BindingBuilder
                 .bind(requestQueue())
-                .to(requestExchange())
-                .with(requestRoutingKey);
+                .to(requestExchange());
     }
 
     @Bean
-    public Queue resultQueue(){
-        return new Queue(resultQueue, true);
+    public Queue resultQueueOne(){
+        return new Queue(resultQueueOne, true);
     }
 
     @Bean
-    public DirectExchange  resultExchange() {
-        return new DirectExchange(resultExchange, true,  false);
+    public FanoutExchange  resultExchange() {
+        return new FanoutExchange(resultExchange, true,  false);
     }
 
     @Bean
     public Binding  resultBinding() {
         return BindingBuilder
-                .bind(resultQueue())
-                .to(resultExchange())
-                .with(resultRoutingKey);
+                .bind(resultQueueOne())
+                .to(resultExchange());
+    }
+
+    @Bean
+    public Queue resultQueueTwo(){
+        return new Queue(resultQueueTwo, true);
+    }
+
+    @Bean
+    public Binding  resultBindingTwo() {
+        return BindingBuilder
+                .bind(resultQueueTwo())
+                .to(resultExchange());
     }
 }

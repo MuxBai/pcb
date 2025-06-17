@@ -2,7 +2,8 @@ requestQueue: RequestQueue
 requestExchange: RequestExchange
 requestRoutingKey: Request
 
-resultQueue: ResultQueue
+resultQueueOne: ResultQueueOne
+resultQueueTwo: ResultQueueTwo
 resultExchange: ResultExchange
 resultRoutingKey: Result
 

@@ -25,7 +25,7 @@ public class Consumer {
     @Autowired
     private ReportService reportService;
 
-    @RabbitListener(queues = "${resultQueue}")
+    @RabbitListener(queues = "${resultQueueOne}")
     public void receive(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag){
         System.out.println("拿到数据");
         try{
