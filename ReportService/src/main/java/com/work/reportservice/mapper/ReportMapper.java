@@ -6,6 +6,7 @@ import com.work.reportservice.entity.Reports;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper
 public interface ReportMapper {
@@ -19,5 +20,7 @@ public interface ReportMapper {
     public OutReport findExportReportById(Integer id);
     public int countReportsBySerialNumber(String serialNumber);
     public int deleteByReportId(List<Integer> reportIds);
+    Set<String> findSerialsByReportIds(List<Integer> reportIds);
+    List<Integer> findDistinctReportIdsBySerialNumbers(List<String> serialNumbers);
     public int deleteBySerialNumber(List<String> serialNumbers);
 }

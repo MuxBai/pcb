@@ -15,9 +15,25 @@
         SELECT * FROM reports WHERE report_id = #{reportId}
     </select>
 
+    <select id="findSerialsByReportIds" resultType="string">
+        SELECT serial_number FROM reports WHERE report_id IN
+        <foreach collection="reportIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findDistinctReportIdsBySerialNumbers" resultType="int" parameterType="java.util.List">
+        SELECT DISTINCT report_id
+        FROM reports
+        WHERE serial_number IN
+        <foreach collection="list" item="serial" open="(" separator="," close=")">
+            #{serial}
+        </foreach>
+    </select>
+
     <select id="findAllReport" resultMap="ReportMap">
         SELECT * FROM reports
-        LIMIT #{limit} OFFSET #{offset}
+                          LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countReports" resultType="java.lang.Integer">
@@ -38,7 +54,7 @@
         UPDATE reports SET content = #{content} WHERE report_id = #{reportId}
     </update>
 
-    <insert id="insertReport" parameterType="com.work.reportservice.entity.Reports">
+    <insert id="insertReport" parameterType="com.work.reportservice.entity.Reports" useGeneratedKeys="true" keyProperty="reportId">
         INSERT INTO reports (content, created_at, front_defect_img, back_defect_img, serial_number)
         VALUES (#{content}, #{createdAt}, #{frontDefectImg}, #{backDefectImg}, #{serialNumber})
     </insert>

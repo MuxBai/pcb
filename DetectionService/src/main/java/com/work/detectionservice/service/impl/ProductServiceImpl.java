@@ -12,6 +12,7 @@ import com.work.detectionservice.entity.Products;
 import com.work.detectionservice.mapper.ProductMapper;
 import com.work.detectionservice.service.ProductService;
 import com.work.detectionservice.utils.OssJavaSdk;
+import com.work.detectionservice.utils.ProductCacheUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,8 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private ProductCacheUtils productCacheUtils;
 
     //传入照片数据
     @Override
@@ -95,7 +99,20 @@ public class ProductServiceImpl implements ProductService {
             products.setUserId(uploadProduct.getUserId());
             products.setDefectLevel(0);
             System.out.println("默认缺陷等级为0");
-            return productDao.insertProductData(products);
+
+            //原本的代码
+            //return productDao.insertProductData(products);
+
+            //（修改的开头）
+            // 插入数据库
+            boolean result = productDao.insertProductData(products);
+
+            // 删除缓存：按 userId、全部分页等缓存
+            if (result) {
+                productCacheUtils.deleteRelatedProductCaches(Collections.singletonList(products));
+            }
+            return result;
+            //（修改的结尾）
         }catch (Exception e){
             logger.error("向队列消息发送失败: {}", e.getMessage());
             e.printStackTrace();
@@ -104,9 +121,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     //修改缺陷等级
-    @Override
+    /*@Override
     public Boolean updateDefectLevel(String serialNumber,Integer defectLevel){
         return productMapper.updateDefectLevel(serialNumber,defectLevel);
+    }*/
+    @Override
+    public Boolean updateDefectLevel(String serialNumber, Integer defectLevel) {
+        List<Products> productsList = productMapper.findBySerialNumbers(List.of(serialNumber));
+        if (productsList == null || productsList.isEmpty()) {
+            logger.error("未找到对应产品，序列号：" + serialNumber);
+            return false;
+        }
+        Products oldProduct = productsList.get(0);
+
+        // 更新缺陷等级
+        boolean success = productMapper.updateDefectLevel(serialNumber, defectLevel);
+        if (success) {
+            // 清理旧缓存
+            productCacheUtils.deleteRelatedProductCaches(List.of(oldProduct));
+        }
+        return success;
     }
 
     // 修改传入图片
@@ -133,12 +167,17 @@ public class ProductServiceImpl implements ProductService {
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
+
             // 尝试加锁，最多等待3秒，获取到后自动释放锁时间为10秒
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
 
                 // 已获取锁，开始执行更新逻辑
-                Products products = new Products();
-                products.setSerialNumber(serialNumber);
+                List<Products> productsList = productMapper.findBySerialNumbers(List.of(serialNumber));
+                if (productsList == null || productsList.isEmpty()) {
+                    logger.error("未找到对应产品，序列号：" + serialNumber);
+                    return false;
+                }
+                Products products = productsList.get(0);
 
                 if (frontFile != null && !frontFile.isEmpty()) {
                     // 上传正面图片到 OSS 并设置路径
@@ -153,7 +192,12 @@ public class ProductServiceImpl implements ProductService {
                 }
 
                 // 更新数据库中的图片路径
-                return productMapper.updateProductImages(products);
+                boolean success = productMapper.updateProductImages(products);
+                if (success) {
+                    //清除相关缓存，保证缓存一致性
+                    productCacheUtils.deleteRelatedProductCaches(List.of(products));
+                }
+                return success;
 
             } else {
                 // 未获取到锁，说明有其他人正在修改该商品图片
@@ -266,17 +310,20 @@ public class ProductServiceImpl implements ProductService {
             MyException.throwError("删除失败：序列号列表不能为空", 400);
         }
 
-    /*Integer role = JwtFilter.getUserRoleFromToken(token);
-    if (role != 2)
-        MyException.throwError("权限不足", 403);*/
-
-        // 统一锁 key，防止多个用户同时删除同一批产品
         String lockKey = "product:delete:serial:lock:" + serialNumbers.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                // 获取删除前的产品数据用于清除缓存
+                List<Products> products = productMapper.findBySerialNumbers(serialNumbers);
+
                 int result = productMapper.deleteBySerialNumber(serialNumbers);
+
+                if (result > 0) {
+                    productCacheUtils.deleteRelatedProductCaches(products);
+                }
+
                 return result > 0;
             } else {
                 MyException.throwError("产品信息正在被其他用户操作，请稍后重试", 429);
@@ -303,17 +350,20 @@ public class ProductServiceImpl implements ProductService {
             MyException.throwError("删除失败：用户ID列表不能为空", 400);
         }
 
-    /*Integer role = JwtFilter.getUserRoleFromToken(token);
-    if (role != 2)
-        MyException.throwError("权限不足", 403);*/
-
-        // 统一锁 key，避免并发删除同一批用户关联的产品
         String lockKey = "product:delete:user:lock:" + userIds.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                // 获取删除前的产品数据用于清除缓存
+                List<Products> products = productMapper.findByUserIds(userIds);
+
                 int result = productMapper.deleteByUserId(userIds);
+
+                if (result > 0) {
+                    productCacheUtils.deleteRelatedProductCaches(products);
+                }
+
                 return result > 0;
             } else {
                 MyException.throwError("产品信息正在被其他用户操作，请稍后重试", 429);
@@ -328,5 +378,4 @@ public class ProductServiceImpl implements ProductService {
             }
         }
     }
-
 }

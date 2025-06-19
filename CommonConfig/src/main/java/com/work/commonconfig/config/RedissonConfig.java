@@ -14,7 +14,7 @@ public class RedissonConfig {
         Config config = new Config();
         // 单机模式，地址换成你的 Redis 地址
         config.useSingleServer()
-                .setAddress("redis://127.0.0.1:6379")
+                .setAddress("redis://81.71.96.88:6379")
                 .setDatabase(0);
         return Redisson.create(config);
     }

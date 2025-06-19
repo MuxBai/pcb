@@ -8,7 +8,7 @@ resultExchange: ResultExchange
 resultRoutingKey: Result
 
 virtualHost: gundam
-rmqHost: localhost
+rmqHost: 81.71.96.88
 rmqPort: 5672
 rmqUser: ark
 rmqPassword: alice

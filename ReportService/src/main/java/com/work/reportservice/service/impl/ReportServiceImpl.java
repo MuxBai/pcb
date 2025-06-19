@@ -10,6 +10,8 @@ import com.work.reportservice.entity.Reports;
 import com.work.reportservice.mapper.ExportRecordMapper;
 import com.work.reportservice.mapper.ReportMapper;
 import com.work.reportservice.service.ReportService;
+import com.work.reportservice.utils.ExportCacheUtils;
+import com.work.reportservice.utils.ReportCacheUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,9 @@ import com.alibaba.fastjson.JSON;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -40,6 +44,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ReportCacheUtils reportCacheUtils;
+
+    @Autowired
+    private ExportCacheUtils exportCacheUtils;
 
     // 根据id查询报告
     @Override
@@ -104,17 +114,24 @@ public class ReportServiceImpl implements ReportService {
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
-            // 尝试加锁，最多等待3秒，锁10秒自动释放
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
-                // 获取锁后执行修改
-                return reportMapper.changeReport(changeReport);
+                // 获取该报告的序列号
+                Reports report = reportMapper.findByReportId(reportId);
+                String serial = report.getSerialNumber();
+
+                Boolean success = reportMapper.changeReport(changeReport);
+                if (success) {
+                    reportCacheUtils.clearCachesAfterReportChange(
+                            Set.of(reportId), Set.of(serial)
+                    );
+
+                }
+                return success;
             } else {
-                // 未拿到锁，说明正在被其他用户修改
                 MyException.throwError("报告正在被其他用户修改，请稍后重试", 429);
                 return false;
             }
         } catch (Exception e) {
-            // 捕获其他异常，包装成自定义异常抛出
             MyException.throwError("修改报告失败：" + e.getMessage(), 500);
             return false;
         } finally {
@@ -127,7 +144,14 @@ public class ReportServiceImpl implements ReportService {
     // 生成报告
     @Override
     public Boolean insertReport(Reports reports) {
-        return reportMapper.insertReport(reports);
+        boolean result = reportMapper.insertReport(reports);
+        if (result) {
+            // 新增报告后清除相关缓存
+            Set<Integer> reportIds = Set.of(reports.getReportId());
+            Set<String> serialNumbers = Set.of(reports.getSerialNumber());
+            reportCacheUtils.clearCachesAfterReportChange(reportIds, serialNumbers);
+        }
+        return result;
     }
 
     // 分页获取全部报告
@@ -182,13 +206,22 @@ public class ReportServiceImpl implements ReportService {
             MyException.throwError("权限不足", 403);
 
         // 记录导出
+        List<Integer> exportIds = new ArrayList<>();
         for (Integer reportId : reportIds) {
             ExportRecords exportReport = new ExportRecords();
             exportReport.setUserId(userId);
             exportReport.setReportId(reportId);
             exportReport.setExportedAt(LocalDateTime.now());
             exportRecordMapper.insertExportRecord(exportReport);
+            exportIds.add(exportReport.getExportId()); // 前提是 insert 时回填主键
         }
+
+        // 清理导出记录相关缓存
+        exportCacheUtils.clearCachesAfterExportDelete(
+                Set.of(userId),
+                new HashSet<>(reportIds),
+                new HashSet<>(exportIds)
+        );
 
         List<OutReport> reports = new ArrayList<>();
 
@@ -240,21 +273,26 @@ public class ReportServiceImpl implements ReportService {
         if (!JwtFilter.isValidToken(token))
             MyException.throwError("token过期或无效", 401);
 
-        /*Integer role = JwtFilter.getUserRoleFromToken(token);
-        if (role != 2)
-            MyException.throwError("权限不足", 403);*/
-
         if (reportIds == null || reportIds.isEmpty()) {
             MyException.throwError("删除失败：报告ID列表不能为空", 400);
         }
 
-        // 锁 key，统一 key
         String lockKey = "report:delete:lock:" + reportIds.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                // 查出删除前的序列号
+                Set<String> serials = reportMapper.findSerialsByReportIds(reportIds);
+
                 int result = reportMapper.deleteByReportId(reportIds);
+
+                if (result > 0) {
+                    reportCacheUtils.clearCachesAfterReportChange(
+                            new HashSet<>(reportIds), serials
+                    );
+                }
+
                 return result > 0;
             } else {
                 MyException.throwError("报告正在被其他用户操作，请稍后重试", 429);
@@ -271,28 +309,39 @@ public class ReportServiceImpl implements ReportService {
     }
 
 
+
     // 根据serial_number删除报告
     @Override
     public boolean deleteReportsBySerialNumbers(List<String> serialNumbers, String token) {
         if (!JwtFilter.isValidToken(token))
             MyException.throwError("token过期或无效", 401);
 
-        /*Integer role = JwtFilter.getUserRoleFromToken(token);
-        if (role != 2)
-            MyException.throwError("权限不足", 403);*/
+    /*Integer role = JwtFilter.getUserRoleFromToken(token);
+    if (role != 2)
+        MyException.throwError("权限不足", 403);*/
 
         if (serialNumbers == null || serialNumbers.isEmpty()) {
             MyException.throwError("删除失败：序列号列表不能为空", 400);
         }
 
-        // 统一锁 key，防止多个用户同时删除同一批报告
         String lockKey = "report:delete:serial:lock:" + serialNumbers.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                Set<Integer> reportIds = new HashSet<>(reportMapper.findDistinctReportIdsBySerialNumbers(serialNumbers));
                 int result = reportMapper.deleteBySerialNumber(serialNumbers);
-                return result > 0;
+
+                if (result > 0) {
+                    // 删除 Redis 缓存
+                    reportCacheUtils.clearCachesAfterReportChange(
+                            reportIds,
+                            new HashSet<>(serialNumbers)
+                    );
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 MyException.throwError("报告正在被其他用户操作，请稍后重试", 429);
                 return false;

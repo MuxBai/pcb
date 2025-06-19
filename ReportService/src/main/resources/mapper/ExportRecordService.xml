@@ -8,10 +8,11 @@
         <result property="exportedAt" column="exported_at"/>
     </resultMap>
 
-    <insert id="insertExportRecord" parameterType="com.work.reportservice.entity.ExportRecords">
+    <insert id="insertExportRecord" parameterType="com.work.reportservice.entity.ExportRecords" useGeneratedKeys="true" keyProperty="exportId">
         INSERT INTO export_records (report_id, user_id, exported_at)
         VALUES (#{reportId}, #{userId}, #{exportedAt})
     </insert>
+
 
     <!-- 分页查询：按 userId -->
     <select id="getExportRecordsByUserId" resultMap="ExportRecordMapper">
@@ -63,4 +64,36 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="findUserIdsByExportIds" resultType="java.lang.String">
+        SELECT DISTINCT user_id FROM export_records WHERE export_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findReportIdsByExportIds" resultType="java.lang.Integer">
+        SELECT DISTINCT report_id FROM export_records WHERE export_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findUserIdsByReportIds" resultType="java.lang.String">
+        SELECT DISTINCT user_id
+        FROM export_records
+        WHERE report_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findExportIdsByReportIds" resultType="java.lang.Integer">
+        SELECT DISTINCT export_id
+        FROM export_records
+        WHERE report_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

@@ -38,4 +38,9 @@ public interface ProductMapper {
     int deleteBySerialNumber(List<String> serialNumbers);
     int deleteByUserId(List<String> userIds);
 
+    List<Products> findBySerialNumbers(List<String> serialNumbers);
+
+    List<Products> findByUserIds(List<String> userIds);
+
+
 }

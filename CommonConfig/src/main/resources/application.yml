@@ -1,6 +1,6 @@
 spring:
   rabbitmq:
-    host: localhost
+    host: 81.71.96.88
     port: 5672
     username: ark
     password: alice
@@ -8,7 +8,7 @@ spring:
     connection-timeout: 60000
   data:
     redis:
-      host: localhost  # 新配置路径
+      host: 81.71.96.88  # 新配置路径
       port: 6379
 #      password: "root"
       database: 0

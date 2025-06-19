@@ -143,11 +143,9 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+            <!-- 删除这个 spring-boot-maven-plugin 插件 -->
         </plugins>
     </build>
+
 
 </project>

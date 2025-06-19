@@ -6,13 +6,16 @@ import com.work.commonconfig.exception.MyException;
 import com.work.reportservice.entity.ExportRecords;
 import com.work.reportservice.mapper.ExportRecordMapper;
 import com.work.reportservice.service.ExportRecordService;
+import com.work.reportservice.utils.ExportCacheUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -26,6 +29,8 @@ public class ExportRecordServiceImpl implements ExportRecordService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private ExportCacheUtils exportCacheUtils;
 
     // 查询某一管理员获取的所有报告记录
     @Override
@@ -168,18 +173,23 @@ public class ExportRecordServiceImpl implements ExportRecordService {
             MyException.throwError("删除失败：导出记录ID列表不能为空", 400);
         }
 
-        /*Integer role = JwtFilter.getUserRoleFromToken(token);
-        if (role != 2)
-            MyException.throwError("权限不足", 403);*/
-
-        // 使用统一的 Redis 锁 key
         String lockKey = "export:delete:lock:" + exportIds.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                // 先查出对应 userId 和 reportId
+                Set<String> userIds = new HashSet<>(exportRecordMapper.findUserIdsByExportIds(exportIds));
+                Set<Integer> reportIds = new HashSet<>(exportRecordMapper.findReportIdsByExportIds(exportIds));
+
                 int result = exportRecordMapper.deleteByExportId(exportIds);
-                return result > 0;
+
+                if (result > 0) {
+                    exportCacheUtils.clearCachesAfterExportDelete(userIds, reportIds, new HashSet<>(exportIds));
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 MyException.throwError("导出记录正在被其他用户操作，请稍后重试", 429);
                 return false;
@@ -194,7 +204,6 @@ public class ExportRecordServiceImpl implements ExportRecordService {
         }
     }
 
-
     // 根据report_id删除导出记录表
     @Override
     public boolean deleteByReportIds(List<Integer> reportIds, String token) {
@@ -205,18 +214,22 @@ public class ExportRecordServiceImpl implements ExportRecordService {
             MyException.throwError("删除失败：报告ID列表不能为空", 400);
         }
 
-        /*Integer role = JwtFilter.getUserRoleFromToken(token);
-        if (role != 2)
-            MyException.throwError("权限不足", 403);*/
-
-        // 统一锁 key，避免并发删除相同报告
         String lockKey = "report:delete:lock:" + reportIds.toString();
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
             if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+                Set<String> userIds = new HashSet<>(exportRecordMapper.findUserIdsByReportIds(reportIds));
+                Set<Integer> exportIds = new HashSet<>(exportRecordMapper.findExportIdsByReportIds(reportIds));
+
                 int result = exportRecordMapper.deleteByReportId(reportIds);
-                return result > 0;
+
+                if (result > 0) {
+                    exportCacheUtils.clearCachesAfterExportDelete(userIds, new HashSet<>(reportIds), exportIds);
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 MyException.throwError("报告正在被其他用户操作，请稍后重试", 429);
                 return false;

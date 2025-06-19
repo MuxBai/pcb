@@ -17,4 +17,9 @@ public interface ExportRecordMapper {
     Integer countExportReport();
     int deleteByExportId(List<Integer> exportIds);
     int deleteByReportId(List<Integer> reportIds);
+    List<String> findUserIdsByExportIds(List<Integer> exportIds);
+    List<Integer> findReportIdsByExportIds(List<Integer> exportIds);
+    List<String> findUserIdsByReportIds(List<Integer> reportIds);
+    List<Integer> findExportIdsByReportIds(List<Integer> reportIds);
+
 }
